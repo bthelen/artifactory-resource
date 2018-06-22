@@ -62,3 +62,25 @@
   [ "$output" = "$expected_output" ]
   # [ "$result" -eq 4 ]
 }
+
+@test "check_version correctly parses and compares semantic versions" {
+  source assets/common.sh
+
+  export regex="myapp-(?<version>.*).txt"
+  export expected_output=$(cat ./test/data/expected_semver_gte_1.3.9.txt)
+
+  run check_version "fake_url" "fake_regex" "1.3.9" "$(cat ./test/data/mocked_versions_semver.txt)"
+  [ "$status" -eq 0 ]
+  [ "$output" = "$expected_output" ]
+}
+
+@test "check_version correctly parses and compares datetime versions" {
+  source assets/common.sh
+
+  export regex="myapp-(?<version>.*).txt"
+  export expected_output=$(cat ./test/data/expected_datetime_gte_201805311300.txt)
+
+  run check_version "fake_url" "fake_regex" "201805311300" "$(cat ./test/data/mocked_versions_datetime.txt)"
+  [ "$status" -eq 0 ]
+  [ "$output" = "$expected_output" ]
+}

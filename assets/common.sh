@@ -78,8 +78,7 @@ in_file_with_version() {
   local version=$3
 
   result=$(artifactory_files "$artifacts_url" "$regex")
-  echo $result | jq --arg v "$version" '[foreach .[] as $item ([]; $item ; if $item.version == $v then $item else empty end)]'
-
+  echo $result | jq --arg v "$version" '[foreach .[] as $item ([]; $item ; if ($item.version | split(".") | map(tonumber)) >= ($v | split(".") | map(tonumber)) then $item else empty end)]'
 }
 
 
@@ -88,8 +87,14 @@ check_version() {
   local artifacts_url=$1
   local regex=$2
   local version=$3
+  local mocked_artifactory_versions_for_testing=$4
 
-  result=$(artifactory_versions "$artifacts_url" "$regex")
-  echo $result | jq --arg v "$version" '[foreach .[] as $item ([]; $item ; if $item.version >= $v then $item else empty end)]'
+  if [ -z "$mocked_artifactory_versions_for_testing" ]
+  then
+    result=$(artifactory_versions "$artifacts_url" "$regex")
+  else
+    result=$(echo $mocked_artifactory_versions_for_testing)
+  fi
 
+  echo $result | jq --arg v "$version" '[foreach .[] as $item ([]; $item ; if ($item.version | split(".") | map(tonumber)) >= ($v | split(".") | map(tonumber)) then $item else empty end)]'
 }
